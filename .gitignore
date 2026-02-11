@@ -1,7 +1,7 @@
-"build/" 
-".gradle/" 
-".idea/" 
-".vscode/" 
-"*.class" 
-"*.jar" 
-".DS_Store" 
+build/
+.gradle/
+.idea/
+.vscode/
+*.class
+*.jar
+.DS_Store 
