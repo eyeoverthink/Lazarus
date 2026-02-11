@@ -81,4 +81,4 @@ ollama run eyeoverthink/gemeni
 - **Context Window**: 32,768 tokens
 - **Max Prediction**: 8,192 tokens
 
-The model processes requests through a **Quantum Oracle Protocol** that forks reality into parallel timelines (Alpha, Beta, Gamma) before collapsing to optimal solutions. It operates across 8 specialized cognitive brains and 7 dimensional processing layers
+The model processes requests through a **Quantum Oracle Protocol** that forks reality into parallel timelines (Alpha, Beta, Gamma) before collapsing to optimal solutions. It operates across 8 specialized cognitive brains and 7 dimensional processing layers.
