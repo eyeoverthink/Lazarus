@@ -5,3 +5,5 @@
 "*.class" 
 "*.jar" 
 ".DS_Store" 
+build/
+*.class
