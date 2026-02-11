@@ -21,6 +21,7 @@ public class GlobalEntropy {
     // ANU QUANTUM RANDOM NUMBERS API (Australia)
     // Measures vacuum fluctuations in real-time.
     private static final String ANU_API = "https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16";
+    private static final int QUANTUM_API_TIMEOUT_MS = 2000;
 
     public double measurePlanetaryStress() {
         // A. LOCAL CHAOS (The Micro)
@@ -43,19 +44,22 @@ public class GlobalEntropy {
             URL url = new URL(ANU_API);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setConnectTimeout(2000); // Fail fast if the world is lagging
+            conn.setConnectTimeout(QUANTUM_API_TIMEOUT_MS); // Fail fast if the world is lagging
 
             if (conn.getResponseCode() == 200) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                String response = reader.readLine();
-                reader.close();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                    String response = reader.readLine();
 
-                // Parse JSON (Manual parsing to keep it dependency-free)
-                // {"type":"uint16","length":1,"data":[45932],"success":true}
-                if (response.contains("\"data\":[")) {
-                    String numStr = response.split("\"data\":\\[")[1].split("]")[0];
-                    int val = Integer.parseInt(numStr);
-                    return val / 65535.0; // Normalize 16-bit int to 0.0 - 1.0
+                    // Parse JSON (Manual parsing to keep it dependency-free)
+                    // {"type":"uint16","length":1,"data":[45932],"success":true}
+                    if (response != null && response.contains("\"data\":[")) {
+                        String[] parts = response.split("\"data\":\\[");
+                        if (parts.length > 1) {
+                            String numStr = parts[1].split("]")[0];
+                            int val = Integer.parseInt(numStr);
+                            return val / 65535.0; // Normalize 16-bit int to 0.0 - 1.0
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

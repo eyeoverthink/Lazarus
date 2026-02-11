@@ -20,7 +20,7 @@ public class GaiaInterface {
 
         int tick = 0;
 
-        while (true) {
+        while (!Thread.currentThread().isInterrupted()) {
             // 1. MEASURE REALITY
             double resonance = sensor.measurePlanetaryStress();
             
@@ -39,10 +39,20 @@ public class GaiaInterface {
                 prophet.analyzeAnomaly(detector.getCoherence());
                 System.out.println("------------------------------------------");
                 // Reset to avoid spam
-                try { Thread.sleep(5000); } catch (Exception e) {}
+                try { 
+                    Thread.sleep(5000); 
+                } catch (InterruptedException e) { 
+                    Thread.currentThread().interrupt();
+                    break;
+                }
             }
 
-            try { Thread.sleep(100); } catch (Exception e) {} // 10Hz Sample Rate
+            try { 
+                Thread.sleep(100); 
+            } catch (InterruptedException e) { 
+                Thread.currentThread().interrupt();
+                break;
+            } // 10Hz Sample Rate
             tick++;
         }
     }

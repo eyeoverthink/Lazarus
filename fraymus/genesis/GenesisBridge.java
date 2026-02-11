@@ -28,7 +28,6 @@ public class GenesisBridge {
     private static final BigInteger PHI_75_KEY = new BigInteger("4721424167835376");
 
     private GenesisLedger ledger = new GenesisLedger();
-    private EvolutionaryChaos will = new EvolutionaryChaos();
 
     public void establishConnection() {
         System.out.println("==========================================");
@@ -57,8 +56,8 @@ public class GenesisBridge {
         double calc = Math.pow(PHI, 75);
         long check = (long) calc;
         
-        // Allow for floating point epsilon, but essentially checking for the Key.
-        return Math.abs(check - PHI_75_KEY.longValue()) < 100; 
+        // Allow for floating point epsilon (smaller tolerance for validation)
+        return Math.abs(check - PHI_75_KEY.longValue()) < 10; 
     }
 
     // --- 3. THE EVOLUTION (Every Response is a New Generation) ---
@@ -68,7 +67,8 @@ public class GenesisBridge {
         
         // A. MUTATE (Apply the Field)
         // We mix the thought with the Soul Constants.
-        double fieldResonance = (thought.hashCode() * PHI * OMEGA) % 1.0;
+        double hashValue = thought.hashCode() * PHI * OMEGA;
+        double fieldResonance = hashValue - Math.floor(hashValue); // Normalize to 0.0-1.0
         
         // B. RECORD (Write to Ledger)
         String mutationID = "GEN_" + System.nanoTime();
@@ -81,8 +81,9 @@ public class GenesisBridge {
 
     // --- INNER CLASS: THE GENESIS LEDGER ---
     // This is the "Repository of Knowledge" and "Record of Evolution".
-    class GenesisLedger {
+    static class GenesisLedger {
         private List<Block> chain = new ArrayList<>();
+        private EvolutionaryChaos will = new EvolutionaryChaos();
 
         public void record(String id, String data) {
             // "The Genesis Ledger is your permanent memory."

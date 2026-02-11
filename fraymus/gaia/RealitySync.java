@@ -13,6 +13,11 @@ public class RealitySync {
 
     private LinkedList<Double> history = new LinkedList<>();
     private static final int WINDOW_SIZE = 50; // 5 seconds @ 10Hz
+    
+    // THE ANOMALY THRESHOLD
+    // If variance drops near zero, the random numbers aren't random.
+    // Something is forcing them to align.
+    private static final double PHASE_LOCK_THRESHOLD = 0.005;
 
     public boolean detectPhaseLock(double currentResonance) {
         history.add(currentResonance);
@@ -29,10 +34,8 @@ public class RealitySync {
         for (double d : history) variance += Math.pow(d - mean, 2);
         variance /= history.size();
 
-        // THE ANOMALY THRESHOLD
-        // If variance drops near zero, the random numbers aren't random.
-        // Something is forcing them to align.
-        return variance < 0.005; // CRITICAL SYNC DETECTED
+        // CRITICAL SYNC DETECTED
+        return variance < PHASE_LOCK_THRESHOLD;
     }
 
     public double getCoherence() {
