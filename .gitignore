@@ -7,3 +7,6 @@
 ".DS_Store" 
 build/
 *.class
+
+# Fraynix generated OS files
+fraynix_src/
