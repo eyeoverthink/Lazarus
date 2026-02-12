@@ -10,3 +10,7 @@ build/
 
 # Fraynix generated OS files
 fraynix_src/
+
+# LazarusGlobalSync database files
+fraymus_akashic.db
+test_*.db
