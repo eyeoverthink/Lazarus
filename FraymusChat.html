@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAYMUS // OLLAMA LINK</title>
+    <style>
+        body {
+            background: #050505;
+            color: #00FF00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid #005500;
+            margin-bottom: 20px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00FF00;
+        }
+        
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        #chat-box {
+            height: calc(80vh - 120px);
+            overflow-y: auto;
+            border-bottom: 2px solid #005500;
+            padding-bottom: 20px;
+        }
+        
+        .msg {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-left: 3px solid transparent;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user {
+            border-color: #00FFFF;
+            color: #E0E0E0;
+            background: rgba(0, 50, 50, 0.2);
+        }
+        
+        .ai {
+            border-color: #00FF00;
+            color: #00FF00;
+            background: rgba(0, 50, 0, 0.2);
+        }
+        
+        .system {
+            border-color: #FF00FF;
+            color: #FF00FF;
+            background: rgba(50, 0, 50, 0.2);
+            font-size: 11px;
+        }
+        
+        #input-area {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #005500;
+            color: #FFF;
+            padding: 15px;
+            font-family: inherit;
+            font-size: 16px;
+            outline: none;
+            border-radius: 4px;
+        }
+        
+        input:focus {
+            border-color: #00FF00;
+            box-shadow: 0 0 10px #005500;
+        }
+        
+        button {
+            background: #005500;
+            border: 1px solid #00FF00;
+            color: #00FF00;
+            padding: 15px 30px;
+            font-family: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #00FF00;
+            color: #000;
+            box-shadow: 0 0 15px #00FF00;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .status.connected {
+            color: #00FF00;
+        }
+        
+        .status.disconnected {
+            color: #FF0000;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #005500;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00FF00;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">🧬 FRAYMUS // OLLAMA LINK</div>
+        <div class="subtitle">Universal Interface • Generation 195</div>
+    </div>
+
+    <div id="chat-box"></div>
+    
+    <div class="status" id="status">
+        ⚠️ NOTE: This interface requires WebSocket server (SystemMain.java with java-websocket library)<br>
+        For standalone use, see HTTP-based transmuter.html instead
+    </div>
+    
+    <div id="input-area">
+        <input type="text" id="cmd" placeholder="COMMAND THE SYSTEM..." autofocus>
+        <button onclick="sendMessage()">SEND</button>
+    </div>
+
+    <script>
+        const box = document.getElementById('chat-box');
+        const input = document.getElementById('cmd');
+        const statusEl = document.getElementById('status');
+        let socket = null;
+
+        // Connect to Java WebSocket server
+        function connect() {
+            try {
+                socket = new WebSocket("ws://localhost:8887");
+                
+                socket.onopen = () => {
+                    statusEl.textContent = '✅ Connected to Fraymus Neural Center';
+                    statusEl.className = 'status connected';
+                    addMsg('System online. Neural link established.', 'system');
+                };
+
+                socket.onmessage = (event) => {
+                    // AI SPEAKS
+                    addMsg(event.data, 'ai');
+                };
+
+                socket.onerror = (error) => {
+                    statusEl.textContent = '❌ Connection Error: Is SystemMain.java running?';
+                    statusEl.className = 'status disconnected';
+                    console.error('WebSocket error:', error);
+                };
+
+                socket.onclose = () => {
+                    statusEl.textContent = '⚠️ Disconnected. Attempting reconnect in 5s...';
+                    statusEl.className = 'status disconnected';
+                    setTimeout(connect, 5000);
+                };
+            } catch (error) {
+                console.error('Connection failed:', error);
+                statusEl.textContent = '❌ Failed to connect. Check if server is running.';
+                statusEl.className = 'status disconnected';
+            }
+        }
+
+        // Send message
+        function sendMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            
+            if (!socket || socket.readyState !== WebSocket.OPEN) {
+                addMsg('Error: Not connected to server', 'system');
+                return;
+            }
+            
+            addMsg(text, 'user');
+            socket.send(text);
+            input.value = '';
+        }
+
+        // Handle Enter key
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Add message to chat
+        function addMsg(text, type) {
+            const div = document.createElement('div');
+            div.className = 'msg ' + type;
+            
+            if (type === 'user') {
+                div.innerText = 'YOU: ' + text;
+            } else if (type === 'ai') {
+                div.innerText = 'SYSTEM: ' + text;
+            } else {
+                div.innerText = text;
+            }
+            
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // Special commands help
+        addMsg('Special commands:', 'system');
+        addMsg('  TRANSMUTE: <filepath> - Absorb file into context', 'system');
+        addMsg('  PURGE - Clear all context', 'system');
+        addMsg('  STATUS - Show system status', 'system');
+        
+        // Auto-connect on load
+        connect();
+    </script>
+</body>
+</html>
