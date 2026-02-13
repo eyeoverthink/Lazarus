@@ -1,5 +1,6 @@
 package gemini.root;
 
+import fraymus.OllamaSpine;
 import com.google.gson.*;
 import java.util.*;
 import java.util.stream.Collectors;

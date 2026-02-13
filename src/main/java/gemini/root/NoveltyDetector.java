@@ -1,5 +1,6 @@
 package gemini.root;
 
+import fraymus.OllamaSpine;
 import java.util.*;
 import java.io.*;
 import java.nio.file.*;
