@@ -11,7 +11,8 @@ repositories {
 }
 
 dependencies {
-    // No external dependencies - pure Java implementation
+    // Gson for JSON parsing
+    implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 java {
@@ -26,7 +27,7 @@ application {
 sourceSets {
     main {
         java {
-            srcDirs = ['.', 'fraymus']
+            srcDirs = ['.', 'fraymus', 'src/main/java']
             exclude 'build/**'
             exclude '.git/**'
             exclude '.gradle/**'
