@@ -11,11 +11,23 @@ import java.util.*;
  * Converts text into high-dimensional vector embeddings using Ollama's embedding models.
  * Also provides text generation and chat capabilities.
  * These embeddings capture semantic meaning and enable similarity comparisons.
+ * 
+ * V3 Improvements:
+ * - Configurable timeouts (connect + read)
+ * - Retry logic with exponential backoff
+ * - Input size caps for embeddings
  */
 public class OllamaSpine {
     
     private static final String OLLAMA_URL = "http://localhost:11434";
-    private static final int TIMEOUT_MS = 120000;  // 2 minutes
+    private static final int CONNECT_TIMEOUT_MS = 10000;  // 10 seconds
+    private static final int READ_TIMEOUT_MS = 120000;    // 2 minutes
+    private static final int MAX_RETRIES = 3;
+    private static final int INITIAL_RETRY_DELAY_MS = 1000;  // 1 second
+    
+    // Input size limits
+    private static final int MAX_EMBED_TEXT_LENGTH = 8000;  // chars
+    private static final int MAX_EMBED_BATCH_SIZE = 100;     // chunks
     
     private String baseUrl;
     private boolean connected = false;
@@ -73,11 +85,7 @@ public class OllamaSpine {
     }
     
     /**
-     * Generate embeddings for a list of text inputs
-     * 
-     * @param embedModel The embedding model to use (e.g., "embeddinggemma", "nomic-embed-text")
-     * @param inputs List of text strings to embed
-     * @return 2D array where each row is an embedding vector for the corresponding input
+     * Generate embeddings for a list of text inputs with size limits
      */
     public double[][] embed(String embedModel, java.util.List<String> inputs) {
         try {
@@ -85,10 +93,23 @@ public class OllamaSpine {
                 return new double[0][];
             }
             
+            // Apply batch size limit
+            if (inputs.size() > MAX_EMBED_BATCH_SIZE) {
+                System.err.println("WARNING: Batch size " + inputs.size() + " exceeds max " + MAX_EMBED_BATCH_SIZE + ", truncating");
+                inputs = inputs.subList(0, MAX_EMBED_BATCH_SIZE);
+            }
+            
             double[][] embeddings = new double[inputs.size()][];
             
             for (int i = 0; i < inputs.size(); i++) {
                 String input = inputs.get(i);
+                
+                // Apply text length limit
+                if (input.length() > MAX_EMBED_TEXT_LENGTH) {
+                    System.err.println("WARNING: Text length " + input.length() + " exceeds max " + MAX_EMBED_TEXT_LENGTH + ", truncating");
+                    input = input.substring(0, MAX_EMBED_TEXT_LENGTH);
+                }
+                
                 double[] embedding = embedSingle(embedModel, input);
                 embeddings[i] = embedding;
             }
@@ -103,19 +124,19 @@ public class OllamaSpine {
     }
     
     /**
-     * Generate embedding for a single text input
-     * 
-     * @param embedModel The embedding model to use
-     * @param input The text to embed
-     * @return The embedding vector
+     * Generate embedding for a single text input with retry logic
      */
     public double[] embedSingle(String embedModel, String input) throws IOException {
+        return retryWithBackoff(() -> embedSingleInternal(embedModel, input));
+    }
+    
+    private double[] embedSingleInternal(String embedModel, String input) throws IOException {
         URL url = new URL(baseUrl + "/api/embeddings");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setConnectTimeout(TIMEOUT_MS);
-        conn.setReadTimeout(TIMEOUT_MS);
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
         conn.setDoOutput(true);
         
         // Build JSON request
@@ -177,10 +198,6 @@ public class OllamaSpine {
     
     /**
      * Escape a string for JSON
-     * 
-     * Note: This is a minimal JSON escaper that handles common cases.
-     * It may not handle all edge cases (e.g., some control characters, certain Unicode sequences).
-     * For production use with complex input, consider using a full JSON library.
      */
     private String escapeJson(String text) {
         if (text == null) return "\"\"";
@@ -225,20 +242,19 @@ public class OllamaSpine {
     }
     
     /**
-     * Generate text completion from Ollama
-     * 
-     * @param model The model to use for generation
-     * @param prompt The prompt text
-     * @param options Optional generation options (temperature, num_ctx, etc.)
-     * @return Generated text response
+     * Generate text completion from Ollama with retry logic
      */
     public String generate(String model, String prompt, Map<String, Object> options) throws IOException {
+        return retryWithBackoff(() -> generateInternal(model, prompt, options));
+    }
+    
+    private String generateInternal(String model, String prompt, Map<String, Object> options) throws IOException {
         URL url = new URL(baseUrl + "/api/generate");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setConnectTimeout(TIMEOUT_MS);
-        conn.setReadTimeout(TIMEOUT_MS);
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
         conn.setDoOutput(true);
         
         // Build JSON request
@@ -289,20 +305,19 @@ public class OllamaSpine {
     }
     
     /**
-     * Chat with Ollama using conversation format
-     * 
-     * @param model The model to use
-     * @param messages List of message maps with "role" and "content" keys
-     * @param options Optional generation options
-     * @return Generated response
+     * Chat with Ollama using conversation format with retry logic
      */
     public String chat(String model, List<Map<String, String>> messages, Map<String, Object> options) throws IOException {
+        return retryWithBackoff(() -> chatInternal(model, messages, options));
+    }
+    
+    private String chatInternal(String model, List<Map<String, String>> messages, Map<String, Object> options) throws IOException {
         URL url = new URL(baseUrl + "/api/chat");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setConnectTimeout(TIMEOUT_MS);
-        conn.setReadTimeout(TIMEOUT_MS);
+        conn.setConnectTimeout(CONNECT_TIMEOUT_MS);
+        conn.setReadTimeout(READ_TIMEOUT_MS);
         conn.setDoOutput(true);
         
         // Build JSON request
@@ -370,7 +385,7 @@ public class OllamaSpine {
         }
         if (start == -1) return "";
         
-        start = json.indexOf("\"", start + 10) + 1;
+        start = json.indexOf("\"", start + 11) + 1;
         
         // Find closing quote (handle escapes)
         boolean escaped = false;
@@ -412,7 +427,7 @@ public class OllamaSpine {
         }
         if (start == -1) return "";
         
-        start = json.indexOf("\"", start + 9) + 1;
+        start = json.indexOf("\"", start + 10) + 1;
         
         // Find closing quote (handle escapes)
         boolean escaped = false;
@@ -488,5 +503,46 @@ public class OllamaSpine {
             System.err.println("embedBatch error: " + e.getMessage());
         }
         return results;
+    }
+    
+    /**
+     * Retry a network operation with exponential backoff
+     */
+    private <T> T retryWithBackoff(IOSupplier<T> operation) throws IOException {
+        int attempt = 0;
+        IOException lastException = null;
+        
+        while (attempt < MAX_RETRIES) {
+            try {
+                return operation.get();
+            } catch (IOException e) {
+                lastException = e;
+                attempt++;
+                
+                // Don't retry on certain errors (4xx client errors)
+                String msg = e.getMessage().toLowerCase();
+                if (msg.contains("400") || msg.contains("401") || msg.contains("403") || msg.contains("404")) {
+                    throw e;
+                }
+                
+                if (attempt < MAX_RETRIES) {
+                    int delayMs = INITIAL_RETRY_DELAY_MS * (1 << (attempt - 1)); // Exponential backoff
+                    System.err.println("Ollama request failed (attempt " + attempt + "/" + MAX_RETRIES + "), retrying in " + delayMs + "ms: " + e.getMessage());
+                    try {
+                        Thread.sleep(delayMs);
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                        throw new IOException("Retry interrupted", ie);
+                    }
+                }
+            }
+        }
+        
+        throw new IOException("Failed after " + MAX_RETRIES + " retries", lastException);
+    }
+    
+    @FunctionalInterface
+    private interface IOSupplier<T> {
+        T get() throws IOException;
     }
 }
