@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAYMUS TRANSMUTER - Bicameral Code Optimization</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            height: 100vh;
+        }
+
+        /* HEADER */
+        .header {
+            background: #1a1a1a;
+            border-bottom: 2px solid #333;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* BICAMERAL LAYOUT */
+        .bicameral {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2px;
+            background: #000;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .brain {
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+            border: 2px solid;
+            overflow: hidden;
+        }
+
+        .brain.left {
+            border-color: #0066ff;
+        }
+
+        .brain.right {
+            border-color: #ff0066;
+        }
+
+        .brain-header {
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+            border-bottom: 2px solid;
+        }
+
+        .brain.left .brain-header {
+            background: linear-gradient(135deg, #0066ff22, transparent);
+            color: #0066ff;
+            border-bottom-color: #0066ff;
+        }
+
+        .brain.right .brain-header {
+            background: linear-gradient(135deg, #ff006622, transparent);
+            color: #ff0066;
+            border-bottom-color: #ff0066;
+        }
+
+        .brain-description {
+            padding: 10px 15px;
+            font-size: 11px;
+            color: #888;
+            border-bottom: 1px solid #333;
+        }
+
+        .brain-content {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        /* CODE AREAS */
+        textarea, pre {
+            width: 100%;
+            height: 100%;
+            background: #0d0d0d;
+            color: #e0e0e0;
+            border: 1px solid #333;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            resize: none;
+            border-radius: 4px;
+        }
+
+        textarea {
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #0066ff;
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+        }
+
+        pre {
+            overflow: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .result-area {
+            background: #0d0d0d;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .result-area.active {
+            border-color: #ff0066;
+            box-shadow: 0 0 10px rgba(255, 0, 102, 0.3);
+        }
+
+        /* CONTROL PANEL */
+        .controls {
+            background: #1a1a1a;
+            border-top: 2px solid #333;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .transmute-btn {
+            background: linear-gradient(135deg, #0066ff, #ff0066);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4);
+        }
+
+        .transmute-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 0, 102, 0.6);
+        }
+
+        .transmute-btn:active {
+            transform: scale(0.95);
+        }
+
+        .transmute-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .status {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .status.processing {
+            color: #00ff41;
+            animation: pulse 1s infinite;
+        }
+
+        .status.error {
+            color: #ff0066;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* LOADING SPINNER */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #333;
+            border-top-color: #00ff41;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <div class="title">🧬 FRAYMUS TRANSMUTER</div>
+            <div class="subtitle">Bicameral Code Optimization • Gen 194</div>
+        </div>
+
+        <!-- BICAMERAL LAYOUT -->
+        <div class="bicameral">
+            <!-- LEFT BRAIN: ARCHITECT -->
+            <div class="brain left">
+                <div class="brain-header">🔷 LEFT ARCHITECT (BLUE)</div>
+                <div class="brain-description">
+                    Analyzes structure • Finds bugs • Plans optimization
+                </div>
+                <div class="brain-content">
+                    <textarea id="sourceCode" placeholder="// Paste your code here for bicameral analysis...
+
+// Example:
+int fibonacci(int n) {
+    if (n <= 1) return n;
+    return fibonacci(n-1) + fibonacci(n-2);
+}"></textarea>
+                </div>
+            </div>
+
+            <!-- RIGHT BRAIN: ORACLE -->
+            <div class="brain right">
+                <div class="brain-header">🔶 RIGHT ORACLE (RED)</div>
+                <div class="brain-description">
+                    Implements solutions • Creative refactoring • Optimization
+                </div>
+                <div class="brain-content">
+                    <div class="result-area" id="resultArea">
+                        <pre id="resultCode">// Optimized code will appear here after transmutation...</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="transmute-btn" id="transmuteBtn" onclick="transmute()">
+                ⚡ TRANSMUTE
+            </button>
+            <div class="status" id="status">Ready for transmutation</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/transmute';
+        
+        async function transmute() {
+            const sourceCode = document.getElementById('sourceCode').value.trim();
+            const resultCode = document.getElementById('resultCode');
+            const resultArea = document.getElementById('resultArea');
+            const status = document.getElementById('status');
+            const btn = document.getElementById('transmuteBtn');
+            
+            if (!sourceCode) {
+                status.textContent = 'Error: No source code provided';
+                status.className = 'status error';
+                return;
+            }
+            
+            // UI: Processing state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> PROCESSING...';
+            status.textContent = 'Activating bicameral processing...';
+            status.className = 'status processing';
+            resultArea.classList.add('active');
+            resultCode.textContent = '// Transmuting through dual-brain analysis...\n\n// LEFT ARCHITECT: Analyzing structure...\n// RIGHT ORACLE: Preparing creative solutions...';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ source: sourceCode })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || `Server error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                // Display result
+                resultCode.textContent = data.result;
+                status.textContent = `✅ Transmutation complete • ${data.bytes_processed} → ${data.bytes_generated} bytes`;
+                status.className = 'status';
+                
+            } catch (error) {
+                console.error('Transmutation error:', error);
+                resultCode.textContent = `// ERROR: Transmutation failed\n// ${error.message}\n\n// Possible issues:\n// 1. Is neural_bridge.py running? (python3 neural_bridge.py)\n// 2. Is Ollama running? (ollama serve)\n// 3. Is the model installed? (ollama pull eyeoverthink/fraymus-recursive)`;
+                status.textContent = `❌ Error: ${error.message}`;
+                status.className = 'status error';
+            } finally {
+                // Reset UI
+                btn.disabled = false;
+                btn.innerHTML = '⚡ TRANSMUTE';
+                resultArea.classList.remove('active');
+            }
+        }
+        
+        // Keyboard shortcut: Ctrl+Enter to transmute
+        document.getElementById('sourceCode').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                transmute();
+            }
+        });
+    </script>
+</body>
+</html>

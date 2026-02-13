@@ -5,3 +5,24 @@
 "*.class" 
 "*.jar" 
 ".DS_Store" 
+build/
+*.class
+
+# Fraynix generated OS files
+fraynix_src/
+
+# LazarusGlobalSync database files
+fraymus_akashic.db
+test_*.db
+
+# War Room temp files
+temp.c
+temp.out
+__pycache__/
+
+# Genesis Zero generated files (auto-created during protocol)
+gemini/root/ProofOfLife.java
+gemini/root/ArchitectTest.java
+
+# Gradle wrapper (keep jar)
+!gradle-wrapper.jar
