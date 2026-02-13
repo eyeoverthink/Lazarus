@@ -152,6 +152,10 @@ public class OllamaSpine {
     
     /**
      * Escape a string for JSON
+     * 
+     * Note: This is a minimal JSON escaper that handles common cases.
+     * It may not handle all edge cases (e.g., some control characters, certain Unicode sequences).
+     * For production use with complex input, consider using a full JSON library.
      */
     private String escapeJson(String text) {
         if (text == null) return "\"\"";
@@ -161,6 +165,8 @@ public class OllamaSpine {
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t")
+            .replace("\b", "\\b")
+            .replace("\f", "\\f")
             + "\"";
     }
     

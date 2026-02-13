@@ -6,3 +6,8 @@ build/
 *.jar
 !gradle/wrapper/gradle-wrapper.jar
 .DS_Store
+*.swp
+*.swo
+*~
+Thumbs.db
+*.iml
