@@ -6,9 +6,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * OllamaSpine: The Embedding Engine
+ * OllamaSpine: The Embedding Engine and Text Generation
  * 
  * Converts text into high-dimensional vector embeddings using Ollama's embedding models.
+ * Also provides text generation and chat capabilities.
  * These embeddings capture semantic meaning and enable similarity comparisons.
  */
 public class OllamaSpine {
@@ -18,6 +19,21 @@ public class OllamaSpine {
     
     private String baseUrl;
     private boolean connected = false;
+    private String chatModel;
+    private String embedModel;
+    
+    /**
+     * Message structure for chat API
+     */
+    public static class Msg {
+        public String role;
+        public String content;
+        
+        public Msg(String role, String content) {
+            this.role = role;
+            this.content = content;
+        }
+    }
     
     public OllamaSpine() {
         this(OLLAMA_URL);
@@ -25,6 +41,15 @@ public class OllamaSpine {
     
     public OllamaSpine(String baseUrl) {
         this.baseUrl = baseUrl;
+        this.chatModel = "llama3";
+        this.embedModel = "embeddinggemma";
+        testConnection();
+    }
+    
+    public OllamaSpine(String chatModel, String embedModel) {
+        this.baseUrl = OLLAMA_URL;
+        this.chatModel = chatModel;
+        this.embedModel = embedModel;
         testConnection();
     }
     
@@ -417,5 +442,50 @@ public class OllamaSpine {
                           .replace("\\\\", "\\");
         
         return response;
+    }
+    
+    /**
+     * Simplified chat method for single-turn interactions
+     * @param messages List of Msg objects with role and content
+     * @param schema Optional JSON schema for structured output
+     * @param options Generation options (temperature, num_ctx, etc.)
+     * @return Generated response text
+     */
+    public String chatOnce(List<Msg> messages, Object schema, Map<String, Object> options) {
+        try {
+            List<Map<String, String>> msgMaps = new ArrayList<>();
+            for (Msg msg : messages) {
+                Map<String, String> m = new HashMap<>();
+                m.put("role", msg.role);
+                m.put("content", msg.content);
+                msgMaps.add(m);
+            }
+            return chat(chatModel, msgMaps, options);
+        } catch (IOException e) {
+            System.err.println("chatOnce error: " + e.getMessage());
+            return "Error: " + e.getMessage();
+        }
+    }
+    
+    /**
+     * Batch embedding for multiple texts
+     * @param texts List of texts to embed
+     * @return List of embedding vectors as float arrays
+     */
+    public List<float[]> embedBatch(List<String> texts) {
+        List<float[]> results = new ArrayList<>();
+        try {
+            for (String text : texts) {
+                double[] embedding = embedSingle(embedModel, text);
+                float[] floatEmb = new float[embedding.length];
+                for (int i = 0; i < embedding.length; i++) {
+                    floatEmb[i] = (float) embedding[i];
+                }
+                results.add(floatEmb);
+            }
+        } catch (IOException e) {
+            System.err.println("embedBatch error: " + e.getMessage());
+        }
+        return results;
     }
 }
