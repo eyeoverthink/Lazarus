@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAR ROOM // GEN 190</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0a0a;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        
+        #hud {
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 60px 1fr;
+            height: 100vh;
+            gap: 2px;
+            background: #000;
+        }
+        
+        #header {
+            grid-column: 1 / -1;
+            background: #0a0a0a;
+            border-bottom: 2px solid #00ff41;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        #title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        
+        #status {
+            display: flex;
+            gap: 30px;
+            font-size: 14px;
+        }
+        
+        .stat {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .label {
+            color: #666;
+        }
+        
+        .value {
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .panel {
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .panel-header {
+            background: #141414;
+            border-bottom: 1px solid #00ff41;
+            padding: 10px 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .panel-content {
+            flex: 1;
+            overflow: auto;
+            padding: 15px;
+        }
+        
+        #code-panel .panel-content {
+            background: #1a1a1a;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        
+        #node-canvas {
+            width: 100%;
+            height: 100%;
+            background: #000;
+        }
+        
+        #logs-panel .panel-content {
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding-left: 5px;
+        }
+        
+        .log-error {
+            color: #ff0051;
+        }
+        
+        .log-success {
+            color: #00ff41;
+        }
+        
+        .log-info {
+            color: #888;
+        }
+        
+        #ignite-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ff41;
+            color: #000;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+        }
+        
+        #ignite-btn:hover {
+            background: #ff0051;
+            color: #fff;
+            box-shadow: 0 0 30px rgba(255, 0, 81, 0.8);
+        }
+        
+        #ignite-btn:active {
+            transform: translateX(-50%) scale(0.95);
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #00ff41;
+        }
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <div id="header">
+            <div id="title">⚔️ WAR ROOM // GEN 190</div>
+            <div id="status">
+                <div class="stat">
+                    <span class="label">STATUS:</span>
+                    <span class="value" id="stat-status">IDLE</span>
+                </div>
+                <div class="stat">
+                    <span class="label">GEN:</span>
+                    <span class="value" id="stat-gen">0</span>
+                </div>
+                <div class="stat">
+                    <span class="label">FITNESS:</span>
+                    <span class="value" id="stat-fitness">0</span>
+                </div>
+            </div>
+        </div>
+        
+        <div id="code-panel" class="panel">
+            <div class="panel-header">📝 CODE // MUTATIONS</div>
+            <div class="panel-content" id="code-display">// AWAITING INPUT</div>
+        </div>
+        
+        <div id="node-panel" class="panel">
+            <div class="panel-header">🧬 NODES // INTELLIGENCE</div>
+            <div class="panel-content" style="padding: 0;">
+                <canvas id="node-canvas"></canvas>
+            </div>
+        </div>
+        
+        <div id="logs-panel" class="panel">
+            <div class="panel-header">📡 LOGS // COMPILER</div>
+            <div class="panel-content" id="logs-display">
+                <div class="log-entry log-info">[SYSTEM ONLINE]</div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="ignite-btn">IGNITE</button>
+    
+    <script>
+        const canvas = document.getElementById('node-canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+        
+        // Particle system
+        let particles = [];
+        
+        class Particle {
+            constructor(type, val) {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.life = 200;
+                this.type = type;
+                this.size = Math.min(val / 20, 10) || 5;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+                
+                // Bounce off edges
+                if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+            }
+            
+            draw() {
+                const alpha = this.life / 200;
+                if (this.type === 'ERR') {
+                    ctx.fillStyle = `rgba(255, 0, 81, ${alpha})`;
+                } else {
+                    ctx.fillStyle = `rgba(0, 255, 65, ${alpha})`;
+                }
+                
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Glow effect
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = this.type === 'ERR' ? '#ff0051' : '#00ff41';
+            }
+        }
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            particles = particles.filter(p => p.life > 0);
+            
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            requestAnimationFrame(animate);
+        }
+        animate();
+        
+        // Data polling
+        let pollInterval;
+        
+        function updateUI(data) {
+            // Update status bar
+            document.getElementById('stat-status').textContent = data.status || 'IDLE';
+            document.getElementById('stat-gen').textContent = data.generation || 0;
+            document.getElementById('stat-fitness').textContent = data.fitness || 0;
+            
+            // Update code
+            document.getElementById('code-display').textContent = data.code || '// AWAITING INPUT';
+            
+            // Update logs
+            const logsDiv = document.getElementById('logs-display');
+            logsDiv.innerHTML = '';
+            (data.logs || []).forEach(log => {
+                const entry = document.createElement('div');
+                entry.className = 'log-entry';
+                
+                if (log.includes('❌') || log.includes('ERROR')) {
+                    entry.className += ' log-error';
+                } else if (log.includes('✅') || log.includes('SUCCESS')) {
+                    entry.className += ' log-success';
+                } else {
+                    entry.className += ' log-info';
+                }
+                
+                entry.textContent = log;
+                logsDiv.appendChild(entry);
+            });
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            
+            // Update particles
+            (data.nodes || []).forEach(node => {
+                particles.push(new Particle(node.type, node.val));
+            });
+        }
+        
+        function pollData() {
+            fetch('http://localhost:8000/data')
+                .then(res => res.json())
+                .then(data => updateUI(data))
+                .catch(err => console.error('Poll error:', err));
+        }
+        
+        // Ignite button
+        document.getElementById('ignite-btn').addEventListener('click', () => {
+            fetch('http://localhost:8000/ignite')
+                .then(() => {
+                    document.getElementById('ignite-btn').textContent = 'EVOLUTION ACTIVE';
+                    document.getElementById('ignite-btn').disabled = true;
+                    
+                    // Start polling
+                    if (!pollInterval) {
+                        pollInterval = setInterval(pollData, 1000);
+                    }
+                })
+                .catch(err => {
+                    alert('Failed to ignite. Is bridge.py running?');
+                    console.error(err);
+                });
+        });
+        
+        // Initial poll
+        pollData();
+    </script>
+</body>
+</html>

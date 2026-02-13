@@ -14,3 +14,8 @@ fraynix_src/
 # LazarusGlobalSync database files
 fraymus_akashic.db
 test_*.db
+
+# War Room temp files
+temp.c
+temp.out
+__pycache__/
