@@ -33,7 +33,7 @@ public class VectorVault {
      */
     public void addAndPersist(String source, List<String> chunks, List<float[]> vectors) {
         for (int i = 0; i < chunks.size() && i < vectors.size(); i++) {
-            entries.add(new VaultEntry(source, chunks.get(i), vectors[i]));
+            entries.add(new VaultEntry(source, chunks.get(i), vectors.get(i)));
         }
         save();
     }
