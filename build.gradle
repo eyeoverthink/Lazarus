@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.eyeoverthink'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // No external dependencies - pure Java implementation
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = 'fraymus.FraymusMain'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['.', 'fraymus']
+            exclude 'build/**'
+            exclude '.git/**'
+            exclude '.gradle/**'
+        }
+    }
+}
+
+tasks.named('run') {
+    // Pass environment variables to the run task
+    environment 'FRAYMUS_MODEL', System.getenv('FRAYMUS_MODEL') ?: 'llama3'
+    environment 'FRAYMUS_EMBED_MODEL', System.getenv('FRAYMUS_EMBED_MODEL') ?: 'embeddinggemma'
+    
+    standardInput = System.in
+}
+
+tasks.register('shadowJar', Jar) {
+    archiveBaseName = 'Fraymus_God_Mode'
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'fraymus.FraymusMain'
+    }
+}
