@@ -19,3 +19,10 @@ test_*.db
 temp.c
 temp.out
 __pycache__/
+
+# Genesis Zero generated files (auto-created during protocol)
+gemini/root/ProofOfLife.java
+gemini/root/ArchitectTest.java
+
+# Gradle wrapper (keep jar)
+!gradle-wrapper.jar
