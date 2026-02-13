@@ -2,7 +2,7 @@
 REM Fraymus Universal Interface - Windows Batch Script
 
 set MODEL=llama3
-set EMBED_MODEL=nomic-embed-text
+set EMBED_MODEL=embeddinggemma
 
 echo ╔════════════════════════════════════════════════════════════╗
 echo ║     FRAYMUS UNIVERSAL INTERFACE - WINDOWS LAUNCHER         ║

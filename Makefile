@@ -2,7 +2,7 @@
 # Cross-platform automation for Unix/Mac/Git Bash
 
 MODEL ?= llama3
-EMBED_MODEL ?= nomic-embed-text
+EMBED_MODEL ?= embeddinggemma
 PORT ?= 8887
 
 .PHONY: doctor pull build run clean test
