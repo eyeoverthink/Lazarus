@@ -70,6 +70,9 @@ public class VectorVault {
     
     /**
      * Load vault from disk
+     * 
+     * WARNING: Uses Java serialization which has security risks.
+     * For production, consider JSON-based storage or add validation.
      */
     public void load() {
         File f = new File(VAULT_FILE);
@@ -79,8 +82,13 @@ public class VectorVault {
         }
         
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
-            entries = (List<VaultEntry>) ois.readObject();
-            System.out.println(">>> [VAULT] Loaded " + entries.size() + " entries");
+            @SuppressWarnings("unchecked")
+            List<VaultEntry> loaded = (List<VaultEntry>) ois.readObject();
+            // Basic validation
+            if (loaded != null) {
+                entries = loaded;
+                System.out.println(">>> [VAULT] Loaded " + entries.size() + " entries");
+            }
         } catch (Exception e) {
             System.err.println(">>> [VAULT] Load failed: " + e.getMessage());
         }

@@ -36,15 +36,19 @@ public class Hippocampus {
      */
     public static void commitMemory(String type, String content) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String block = "[" + timestamp + "|" + type + "] " + content;
+        // Escape newlines to prevent log corruption
+        String escapedContent = content.replace("\n", "\\n").replace("\r", "\\r");
+        String block = "[" + timestamp + "|" + type + "] " + escapedContent;
         chain.add(block);
         
-        // Persist asynchronously
+        // Persist asynchronously (consider using ExecutorService for production)
         new Thread(() -> {
-            try (FileWriter fw = new FileWriter(MEMORY_FILE, true)) {
-                fw.write(block + "\n");
-            } catch (IOException e) {
-                System.err.println(">>> [HIPPOCAMPUS] Persist failed: " + e.getMessage());
+            synchronized (MEMORY_FILE) {  // Prevent concurrent writes
+                try (FileWriter fw = new FileWriter(MEMORY_FILE, true)) {
+                    fw.write(block + "\n");
+                } catch (IOException e) {
+                    System.err.println(">>> [HIPPOCAMPUS] Persist failed: " + e.getMessage());
+                }
             }
         }).start();
     }

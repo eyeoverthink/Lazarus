@@ -447,11 +447,12 @@ public class OllamaSpine {
     /**
      * Simplified chat method for single-turn interactions
      * @param messages List of Msg objects with role and content
-     * @param schema Optional JSON schema for structured output
+     * @param schema Optional JSON schema for structured output (currently unused, reserved for future)
      * @param options Generation options (temperature, num_ctx, etc.)
      * @return Generated response text
      */
     public String chatOnce(List<Msg> messages, Object schema, Map<String, Object> options) {
+        // Note: schema parameter is reserved for future structured output support
         try {
             List<Map<String, String>> msgMaps = new ArrayList<>();
             for (Msg msg : messages) {

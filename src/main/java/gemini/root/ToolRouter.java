@@ -58,14 +58,25 @@ public class ToolRouter {
     private ToolResult calc(JsonObject args) {
         String expr = args.get("expression").getAsString();
         
-        // Simple expression evaluator
+        // Simple expression evaluator with safety limits
         try {
-            // For safety, only allow basic arithmetic
-            expr = expr.replaceAll("[^0-9+\\-*/().\\s]", "");
+            // For safety, only allow basic arithmetic - no parentheses to prevent nesting exploits
+            expr = expr.replaceAll("[^0-9+\\-*/.\\s]", "");
+            
+            // Limit expression length to prevent DoS
+            if (expr.length() > 100) {
+                return new ToolResult("calc", "Expression too long (max 100 chars)");
+            }
             
             // Use JavaScript engine for evaluation (if available)
             javax.script.ScriptEngineManager mgr = new javax.script.ScriptEngineManager();
             javax.script.ScriptEngine engine = mgr.getEngineByName("JavaScript");
+            
+            if (engine == null) {
+                return new ToolResult("calc", "Script engine not available");
+            }
+            
+            // Set timeout/limits would be ideal here but requires more complex setup
             Object result = engine.eval(expr);
             
             return new ToolResult("calc", "Result: " + result);
