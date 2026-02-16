@@ -44,7 +44,7 @@ application {
 sourceSets {
     main {
         java {
-            srcDirs = ['.', 'fraymus', 'src/main/java']
+            srcDirs = ['src/main/java']  // Only use standard source directory
             exclude 'build/**'
             exclude '.git/**'
             exclude '.gradle/**'

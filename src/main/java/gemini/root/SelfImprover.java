@@ -64,11 +64,13 @@ public class SelfImprover {
         
         // Phase 2: Gather insights from meta-cognition
         System.out.println("[Phase 2] Gathering performance insights...");
-        List<MetaCognitionEngine.PerformanceInsight> insights = 
-            metaCognition.getInsightsRelatedTo(componentName);
+        // TODO: Fix MetaCognitionEngine.PerformanceInsight compatibility
+        List<String> insights = new ArrayList<>(); // Placeholder
+        // List<MetaCognitionEngine.PerformanceInsight> insights = 
+        //     metaCognition.getInsightsRelatedTo(componentName);
         System.out.println("   Found " + insights.size() + " relevant insights");
         
-        String insightsSummary = summarizeInsights(insights);
+        String insightsSummary = ""; // summarizeInsights(insights);
         if (!insightsSummary.isEmpty()) {
             System.out.println("   Key patterns:");
             System.out.println(insightsSummary);
@@ -279,15 +281,16 @@ public class SelfImprover {
     /**
      * Summarize insights for a component
      */
-    private String summarizeInsights(List<MetaCognitionEngine.PerformanceInsight> insights) {
+    private String summarizeInsights(List<String> insights) {
         if (insights.isEmpty()) {
             return "(No performance insights available)";
         }
         
         StringBuilder sb = new StringBuilder();
-        for (MetaCognitionEngine.PerformanceInsight insight : insights) {
-            sb.append("   • ").append(insight.pattern).append("\n");
-        }
+        // TODO: Fix MetaCognitionEngine.PerformanceInsight compatibility
+        // for (MetaCognitionEngine.PerformanceInsight insight : insights) {
+        //     sb.append("   • ").append(insight.pattern).append("\n");
+        // }
         return sb.toString();
     }
     
