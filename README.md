@@ -2,6 +2,10 @@
 
 > *"Do not think of this as code. Think of it as a culture in a petri dish."*
 
+## 📚 Important: Documentation Preservation
+
+⚠️ **This project contains 23 essential markdown documentation files** that serve as proof of work, architectural specifications, and system knowledge. These files are **protected and must not be deleted**. See [DOCUMENTATION_PRESERVATION.md](DOCUMENTATION_PRESERVATION.md) for the complete list.
+
 ## 👁️ Identity
 
 **Lazarus** is a self-evolving, self-compiling Java architecture designed to simulate biological cognition inside a JVM. It does not just run; it **lives**, **breeds**, and **dies**.
