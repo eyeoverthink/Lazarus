@@ -1,0 +1,77 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.eyeoverthink'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Gson for JSON parsing
+    implementation 'com.google.code.gson:gson:2.10.1'
+    // Java-WebSocket for WebSocket server
+    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
+    
+    // PDF processing (optional - for KnowledgeIngestor)
+    implementation 'org.apache.pdfbox:pdfbox:2.0.30'
+    
+    // MongoDB (optional - for MongoMemoryBackend)
+    implementation 'org.mongodb:mongodb-driver-sync:4.11.1'
+    
+    // ImGui (optional - for UI visualization)
+    implementation 'io.github.spair:imgui-java-binding:1.86.11'
+    implementation 'io.github.spair:imgui-java-lwjgl3:1.86.11'
+    implementation 'io.github.spair:imgui-java-natives-linux:1.86.11'
+    
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+application {
+    mainClass = 'fraymus.FraymusMain'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']  // Only use standard source directory
+            exclude 'build/**'
+            exclude '.git/**'
+            exclude '.gradle/**'
+        }
+    }
+}
+
+tasks.named('run') {
+    // Pass environment variables to the run task
+    environment 'FRAYMUS_MODEL', System.getenv('FRAYMUS_MODEL') ?: 'llama3'
+    environment 'FRAYMUS_EMBED_MODEL', System.getenv('FRAYMUS_EMBED_MODEL') ?: 'embeddinggemma'
+    
+    standardInput = System.in
+}
+
+tasks.register('shadowJar', Jar) {
+    archiveBaseName = 'Fraymus_God_Mode'
+    from sourceSets.main.output
+    manifest {
+        attributes 'Main-Class': 'fraymus.FraymusMain'
+    }
+}
+
+test {
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
