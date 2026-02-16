@@ -246,15 +246,21 @@ Subconscious defragmentation
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/eyeoverthink/Lazarus.git
+# Clone the repository with submodules (includes OpenClaw)
+git clone --recursive https://github.com/eyeoverthink/Lazarus.git
 cd Lazarus
+
+# If you already cloned without --recursive, initialize submodules:
+git submodule update --init --recursive
 
 # Check dependencies
 make doctor
 
 # Pull required models
 make pull
+
+# Optional: Install OpenClaw AI Gateway
+make openclaw-install
 ```
 
 ### Running the System

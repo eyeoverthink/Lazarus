@@ -57,11 +57,17 @@ brew install openjdk@17
 
 ## Download & Setup (3 Steps)
 
-### Step 1: Clone Repository
+### Step 1: Clone Repository (with OpenClaw)
 ```bash
-git clone https://github.com/eyeoverthink/Lazarus.git
+# Clone with all submodules (includes OpenClaw AI Gateway)
+git clone --recursive https://github.com/eyeoverthink/Lazarus.git
 cd Lazarus
+
+# If you already cloned, initialize submodules:
+git submodule update --init --recursive
 ```
+
+**Why `--recursive`?** OpenClaw (AI Gateway) is included as a submodule. This ensures you get the complete system.
 
 ### Step 2: Verify Java
 ```bash
