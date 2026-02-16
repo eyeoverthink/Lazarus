@@ -36,6 +36,7 @@ public class CommandTerminal {
     private static int historyIndex = -1;
 
     private static ExperimentManager experimentManager;
+    private static fraymus.coding.CodingPrompt codingPrompt;
 
     public static class TerminalLine {
         public final String text;
@@ -51,6 +52,20 @@ public class CommandTerminal {
 
     public static void init(ExperimentManager mgr) {
         experimentManager = mgr;
+        
+        // Initialize Coding Agent if Ollama is available
+        try {
+            OllamaSpine ollama = new OllamaSpine();
+            fraymus.coding.CodingAgent agent = new fraymus.coding.CodingAgent(
+                null,  // Knowledge ingestor (optional)
+                new LivingCodeGenerator(),
+                ollama
+            );
+            codingPrompt = new fraymus.coding.CodingPrompt(agent);
+        } catch (Exception e) {
+            System.err.println("Warning: Could not initialize Coding Agent: " + e.getMessage());
+        }
+        
         printBanner();
     }
 
@@ -183,6 +198,9 @@ public class CommandTerminal {
                 break;
             case "ethics":
                 handleEthics(args);
+                break;
+            case "code":
+                handleCode(fullCommand);
                 break;
             case "codegen":
                 handleCodegen(args);
@@ -410,6 +428,13 @@ public class CommandTerminal {
         print("  mutate <name>       Trigger mutation trial on entity");
         print("");
         printColored("--- CODE EVOLUTION ---", 0.5f, 0.8f, 1.0f);
+        print("  code: <request>     Natural language code generation (AI-powered)");
+        print("  code python: <req>  Generate Python code");
+        print("  code java: <req>    Generate Java code");
+        print("  code show           Show last generated code");
+        print("  code stats          Show coding agent statistics");
+        print("  code help           Show coding agent help");
+        print("  codegen             Force code generation from entities");
         print("  evolve              Force arena evolution cycle");
         print("  arena               Show concept arena status");
         print("  codegen             Trigger code generation cycle");
@@ -836,6 +861,33 @@ public class CommandTerminal {
         }
         printSuccess(String.format("Generated %d code concepts from %d entities", generated, world.getPopulation()));
         FraymusUI.addLog("[TERMINAL] Forced code generation: " + generated + " concepts");
+    }
+    
+    private static void handleCode(String fullCommand) {
+        if (codingPrompt == null) {
+            printError("Coding Agent not available. Ensure Ollama is running.");
+            return;
+        }
+        
+        try {
+            String result = codingPrompt.processCommand(fullCommand);
+            // Print result line by line
+            for (String line : result.split("\n")) {
+                if (line.startsWith("🤖")) {
+                    printHighlight(line);
+                } else if (line.contains("✓") || line.startsWith("   ✓")) {
+                    printSuccess(line);
+                } else if (line.contains("✗") || line.startsWith("❌")) {
+                    printError(line);
+                } else if (line.startsWith("```")) {
+                    printColored(line, 0.7f, 0.7f, 0.7f);
+                } else {
+                    print(line);
+                }
+            }
+        } catch (Exception e) {
+            printError("Error processing code command: " + e.getMessage());
+        }
     }
 
     private static void handleRsa(String args) {
