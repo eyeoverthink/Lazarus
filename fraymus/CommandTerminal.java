@@ -214,6 +214,12 @@ public class CommandTerminal {
             case "physics":
                 handlePhysics(args);
                 break;
+            case "cosmic":
+                handleCosmic(args);
+                break;
+            case "emoji":
+                handleEmoji(args);
+                break;
             case "nodes":
                 showNodes();
                 break;
@@ -516,6 +522,19 @@ public class CommandTerminal {
         print("  physics speed <f>   Set simulation speed multiplier");
         print("  physics boundary    Toggle boundary walls");
         print("  physics chaos       Randomize all velocities");
+        print("");
+        printColored("--- COSMIC PHYSICS ---", 1.0f, 0.8f, 0.3f);
+        print("  cosmic rocket       Relativistic rocket equation (Project Daedalus)");
+        print("  cosmic warp         Alcubierre warp drive metric");
+        print("  cosmic lagrange     Lagrange point stability (JWST orbit)");
+        print("  cosmic drake        Drake equation (SETI probability)");
+        print("  cosmic all          Run all cosmic physics demonstrations");
+        print("");
+        printColored("--- EMOJI STEGANOGRAPHY ---", 1.0f, 0.5f, 0.8f);
+        print("  emoji hide <text>   Hide text in emoji using zero-width chars");
+        print("  emoji extract <emoji> Extract hidden text from emoji");
+        print("  emoji semantic <text> Encode text semantically (hello→👋🌍)");
+        print("  emoji test          Run steganography tests");
         print("");
         printColored("--- BIO-SYMBIOSIS & SIGNALS ---", 0.5f, 0.8f, 1.0f);
         print("  bio                 Bio-symbiosis status (stress, HR, coherence)");
@@ -903,6 +922,16 @@ public class CommandTerminal {
     private static void handlePhysics(String args) {
         if (experimentManager == null) { printError("Experiment manager not ready"); return; }
         experimentManager.runPhysicsCommand(args);
+    }
+
+    private static void handleCosmic(String args) {
+        if (experimentManager == null) { printError("Experiment manager not ready"); return; }
+        experimentManager.runCosmicCommand(args);
+    }
+
+    private static void handleEmoji(String args) {
+        if (experimentManager == null) { printError("Experiment manager not ready"); return; }
+        experimentManager.runEmojiCommand(args);
     }
 
     private static void handleAsk(String args) {
