@@ -77,13 +77,13 @@ public class StringTheory {
     /**
      * String vibration in 11D spacetime
      */
-    public static class String11D {
+    public static class VibrationString11D {
         private final double length;           // String length
         private final double tension;          // String tension
         private final Point11D[] points;       // Discretized string points
         private final double[][] velocities;   // Velocities of string points
         
-        public String11D(int numPoints, double length, double tension) {
+        public VibrationString11D(int numPoints, double length, double tension) {
             this.length = length;
             this.tension = tension;
             this.points = new Point11D[numPoints];
@@ -341,14 +341,14 @@ public class StringTheory {
         
         // Test 2: String vibrations
         System.out.println("\nTest 2: String vibration modes");
-        String11D string = new String11D(50, PLANCK_LENGTH * 10, 1.0);
+        VibrationString11D string = new VibrationString11D(50, PLANCK_LENGTH * 10, 1.0);
         
         // Excite fundamental mode
         string.exciteMode(1, PLANCK_LENGTH, 2);
         System.out.println("String excited with n=1 mode");
         
-        double energy1 = String11D.modeEnergy(1, PLANCK_LENGTH * 10);
-        double energy2 = String11D.modeEnergy(2, PLANCK_LENGTH * 10);
+        double energy1 = VibrationString11D.modeEnergy(1, PLANCK_LENGTH * 10);
+        double energy2 = VibrationString11D.modeEnergy(2, PLANCK_LENGTH * 10);
         System.out.printf("Mode energies: E_1=%.2e, E_2=%.2e\n", energy1, energy2);
         
         // Test 3: Calabi-Yau manifold

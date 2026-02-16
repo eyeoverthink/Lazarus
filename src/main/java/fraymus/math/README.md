@@ -108,7 +108,7 @@ Point11D point = new Point11D(coords);
 double[] projection = point.projectTo4D();
 
 // String vibrations
-String11D string = new String11D(50, PLANCK_LENGTH, 1.0);
+VibrationString11D string = new VibrationString11D(50, PLANCK_LENGTH, 1.0);
 string.exciteMode(1, amplitude, dimension);
 
 // Kaluza-Klein spectrum

@@ -169,8 +169,8 @@ public class AdvancedMathDemo {
         
         // String vibrations
         System.out.println("\n2. String Vibration Modes:");
-        double energy1 = StringTheory.String11D.modeEnergy(1, 1e-35);
-        double energy2 = StringTheory.String11D.modeEnergy(2, 1e-35);
+        double energy1 = StringTheory.VibrationString11D.modeEnergy(1, 1e-35);
+        double energy2 = StringTheory.VibrationString11D.modeEnergy(2, 1e-35);
         System.out.printf("   E₁/E₂ ratio = %.4f (expected: 0.5)\n", energy1 / energy2);
         
         // Kaluza-Klein spectrum

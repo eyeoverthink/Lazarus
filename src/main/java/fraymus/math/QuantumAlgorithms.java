@@ -373,7 +373,7 @@ public class QuantumAlgorithms {
             
             // Annealing schedule
             for (int step = 0; step < steps; step++) {
-                double temperature = 10.0 * (1.0 - (double)step / steps);
+                double annealingTemperature = 10.0 * (1.0 - (double)step / steps);
                 
                 // Try flipping each spin
                 for (int i = 0; i < n; i++) {
@@ -385,7 +385,7 @@ public class QuantumAlgorithms {
                     
                     // Metropolis acceptance
                     double deltaE = energyAfter - energyBefore;
-                    if (deltaE > 0 && rng.nextDouble() > Math.exp(-deltaE / temperature)) {
+                    if (deltaE > 0 && rng.nextDouble() > Math.exp(-deltaE / annealingTemperature)) {
                         // Reject flip
                         spins[i] = -spins[i];
                     }
