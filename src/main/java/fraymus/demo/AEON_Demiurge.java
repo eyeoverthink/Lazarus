@@ -246,14 +246,12 @@ public class AEON_Demiurge implements Runnable {
 
     static double similarity(long[] a, long[] b) {
         double dot = 0;
-        double norm = 0;
         for (int i = 0; i < DIMS; i++) {
             int aval = bitAt(a, i) ? 1 : -1;
             int bval = bitAt(b, i) ? 1 : -1;
             dot += aval * bval;
-            norm += 1;
         }
-        return dot / norm;
+        return dot / DIMS;
     }
 
     private static void setBit(long[] vec, int index) {
@@ -332,8 +330,16 @@ public class AEON_Demiurge implements Runnable {
                             System.out.println("Usage: BIGBANG <count>");
                             break;
                         }
-                        int count = Integer.parseInt(parts[1]);
-                        engine.spawnParticles(count);
+                        try {
+                            int count = Integer.parseInt(parts[1]);
+                            if (count <= 0) {
+                                System.out.println("Count must be positive.");
+                                break;
+                            }
+                            engine.spawnParticles(count);
+                        } catch (NumberFormatException e) {
+                            System.out.println("Invalid count: please provide a valid integer.");
+                        }
                     }
                     case "COLLIDE" -> {
                         if (parts.length < 3) {
