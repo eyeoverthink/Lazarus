@@ -6,16 +6,16 @@ cd "$(dirname "$0")/.."
 
 git fetch --all --prune >/dev/null
 
-branches=$(git for-each-ref 'refs/heads/copilot/*' --format='%(refname:short)')
+mapfile -t branches < <(git for-each-ref 'refs/heads/copilot/*' --format='%(refname:short)')
 
-if [[ -z "${branches}" ]]; then
+if [[ ${#branches[@]} -eq 0 ]]; then
   echo "No local copilot/* branches found."
   exit 0
 fi
 
 found_unpushed=0
 
-for branch in ${branches}; do
+for branch in "${branches[@]}"; do
   remote="origin/${branch}"
   if git show-ref --verify --quiet "refs/remotes/${remote}"; then
     read -r ahead behind <<<"$(git rev-list --left-right --count "${remote}...${branch}")"
@@ -24,6 +24,8 @@ for branch in ${branches}; do
       echo "⚠️  ${branch} is ${ahead} commit(s) ahead of ${remote}:"
       git --no-pager log --oneline "${remote}..${branch}"
       echo
+    elif [[ "${behind}" -gt 0 ]]; then
+      echo "ℹ️  ${branch} is ${behind} commit(s) behind ${remote} (no unpushed commits)."
     fi
   else
     found_unpushed=1
