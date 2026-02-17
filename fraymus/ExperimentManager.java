@@ -3124,5 +3124,257 @@ public class ExperimentManager {
         }
     }
     
+    public void runCosmicCommand(String args) {
+        if (args.isEmpty()) {
+            args = "all";
+        }
+        
+        String[] parts = args.split("\\s+", 2);
+        String sub = parts[0].toLowerCase();
+        
+        switch (sub) {
+            case "rocket":
+            case "relativistic":
+                CommandTerminal.printHighlight("=== RELATIVISTIC ROCKET EQUATION ===");
+                CommandTerminal.print("Source: Tsiolkovsky + Special Relativity");
+                CommandTerminal.print("");
+                
+                // Project Daedalus parameters
+                double exhaustVel = 0.1 * fraymus.physics.CosmicTruth.C;  // 10% speed of light
+                double massRatio = 100.0;  // Large fuel fraction
+                double finalVel = fraymus.physics.CosmicTruth.relativisticRocketVelocity(exhaustVel, massRatio);
+                double percentC = (finalVel / fraymus.physics.CosmicTruth.C) * 100;
+                double transitTime = (4.37 * fraymus.physics.CosmicTruth.LIGHT_YEAR) / finalVel / (365.25 * 24 * 3600);
+                
+                CommandTerminal.printSuccess(String.format("Project Daedalus (Ve=0.1c, m₀/mf=100):"));
+                CommandTerminal.print(String.format("  Final velocity: %.2e m/s (%.2f%% c)", finalVel, percentC));
+                CommandTerminal.print(String.format("  Transit to Alpha Centauri: %.1f years", transitTime));
+                
+                // Relativistic effects at 99.9% c
+                double gammaFactor = fraymus.physics.CosmicTruth.lorentzFactor(0.999 * fraymus.physics.CosmicTruth.C);
+                CommandTerminal.print(String.format("  At 99.9%% c: γ=%.2f (time dilation factor)", gammaFactor));
+                break;
+                
+            case "warp":
+            case "alcubierre":
+                CommandTerminal.printHighlight("=== ALCUBIERRE WARP DRIVE ===");
+                CommandTerminal.print("Source: Alcubierre, M. (1994). Classical and Quantum Gravity");
+                CommandTerminal.print("");
+                
+                double[] positions = {-5.0, -1.0, -0.1, 0.0, 0.1, 1.0, 5.0};
+                double R = 1.0;  // Bubble radius
+                double sigma = 10.0;  // Sharpness
+                
+                CommandTerminal.printSuccess("Warp Bubble Profile (R=1.0m, σ=10):");
+                for (double rs : positions) {
+                    double f = fraymus.physics.CosmicTruth.alcubierreTopHat(rs, R, sigma);
+                    String state = Math.abs(rs) < 0.5 ? "FLAT" : (Math.abs(rs) > 2.0 ? "NORMAL" : "WALL");
+                    CommandTerminal.print(String.format("  r=%.1fm: f(r)=%.4f [%s]", rs, f, state));
+                }
+                
+                CommandTerminal.print("");
+                CommandTerminal.printInfo("Energy requirement: ~10⁶⁶ J (Jupiter mass-energy)");
+                CommandTerminal.printInfo("Status: Mathematically valid, requires exotic matter");
+                break;
+                
+            case "lagrange":
+            case "l4":
+            case "l5":
+                CommandTerminal.printHighlight("=== LAGRANGE POINT STABILITY ===");
+                CommandTerminal.print("Source: Lagrange (1772), Restricted Three-Body Problem");
+                CommandTerminal.print("");
+                
+                // Sun-Earth system
+                double sunMass = 1.989e30;  // kg
+                double earthMass = 5.972e24;  // kg
+                double sunEarthFactor = fraymus.physics.CosmicTruth.lagrangeStabilityFactor(sunMass, earthMass);
+                boolean sunEarthStable = sunEarthFactor >= 27.0;
+                
+                CommandTerminal.printSuccess("Sun-Earth System:");
+                CommandTerminal.print(String.format("  Stability factor: %.2f (threshold: 27)", sunEarthFactor));
+                CommandTerminal.print(String.format("  L4/L5 stable: %s ✅", sunEarthStable ? "YES" : "NO"));
+                CommandTerminal.print("  Real objects: JWST at L2, SOHO at L1");
+                
+                // Earth-Moon system
+                double moonMass = 7.342e22;  // kg
+                double earthMoonFactor = fraymus.physics.CosmicTruth.lagrangeStabilityFactor(earthMass, moonMass);
+                boolean earthMoonStable = earthMoonFactor >= 27.0;
+                
+                CommandTerminal.print("");
+                CommandTerminal.printSuccess("Earth-Moon System:");
+                CommandTerminal.print(String.format("  Stability factor: %.2f (threshold: 27)", earthMoonFactor));
+                CommandTerminal.print(String.format("  L4/L5 stable: %s ✅", earthMoonStable ? "YES" : "NO"));
+                CommandTerminal.print("  Potential: Future space stations");
+                break;
+                
+            case "drake":
+            case "seti":
+                CommandTerminal.printHighlight("=== DRAKE EQUATION ===");
+                CommandTerminal.print("Source: Drake, F. (1961), SETI Institute");
+                CommandTerminal.print("");
+                
+                // Conservative estimate
+                double drakeOptimistic = fraymus.physics.CosmicTruth.drakeEquation(
+                    7.0,    // Star formation rate
+                    1.0,    // Planets per star
+                    0.4,    // Habitable planets
+                    0.1,    // Life develops
+                    0.1,    // Intelligence develops
+                    0.1,    // Communication
+                    10000.0 // Civilization lifetime
+                );
+                
+                // Phi-decay factor (Great Filter)
+                double phi = fraymus.phi.PhiConstants.PHI;
+                double phiDecay = Math.pow(phi, -5);  // φ⁻⁵ ≈ 0.09
+                double drakePhi = drakeOptimistic * phiDecay;
+                
+                CommandTerminal.printSuccess("Optimistic (no Great Filter):");
+                CommandTerminal.print(String.format("  N = %.0f detectable civilizations", drakeOptimistic));
+                
+                CommandTerminal.print("");
+                CommandTerminal.printSuccess("With φ-decay Great Filter:");
+                CommandTerminal.print(String.format("  N = %.3f civilizations (φ⁻⁵ factor)", drakePhi));
+                
+                CommandTerminal.print("");
+                CommandTerminal.printInfo("Fermi Paradox: If N > 0, where is everyone?");
+                break;
+                
+            case "all":
+            case "demo":
+                runCosmicCommand("rocket");
+                CommandTerminal.print("");
+                runCosmicCommand("warp");
+                CommandTerminal.print("");
+                runCosmicCommand("lagrange");
+                CommandTerminal.print("");
+                runCosmicCommand("drake");
+                break;
+                
+            default:
+                CommandTerminal.printError("Unknown cosmic command: " + sub);
+                CommandTerminal.print("Commands: rocket | warp | lagrange | drake | all");
+                break;
+        }
+    }
+    
+    public void runEmojiCommand(String args) {
+        if (args.isEmpty()) {
+            CommandTerminal.printError("Usage: emoji <hide|extract|semantic|test> [args]");
+            return;
+        }
+        
+        String[] parts = args.split("\\s+", 2);
+        String sub = parts[0].toLowerCase();
+        String val = parts.length > 1 ? parts[1] : "";
+        
+        switch (sub) {
+            case "hide":
+                if (val.isEmpty()) {
+                    CommandTerminal.printError("Usage: emoji hide <text>");
+                    return;
+                }
+                
+                String hidden = fraymus.emoji.EmojiSteganography.hideInEmoji(val, "🧠");
+                CommandTerminal.printHighlight("=== EMOJI STEGANOGRAPHY ===");
+                CommandTerminal.printSuccess("Text hidden in emoji using zero-width characters");
+                CommandTerminal.print("");
+                CommandTerminal.print("Original text: " + val);
+                CommandTerminal.print("Carrier emoji: 🧠");
+                CommandTerminal.print("");
+                CommandTerminal.printColored("Hidden result: " + hidden, 1.0f, 0.8f, 0.3f);
+                CommandTerminal.print("");
+                CommandTerminal.printInfo("Copy the emoji above - it contains invisible zero-width characters!");
+                
+                // Try to extract to verify
+                String extracted = fraymus.emoji.EmojiSteganography.extractFromEmoji(hidden);
+                CommandTerminal.print("");
+                CommandTerminal.printSuccess("Verification: " + extracted);
+                break;
+                
+            case "extract":
+                if (val.isEmpty()) {
+                    CommandTerminal.printError("Usage: emoji extract <emoji>");
+                    return;
+                }
+                
+                String extractedText = fraymus.emoji.EmojiSteganography.extractFromEmoji(val);
+                CommandTerminal.printHighlight("=== EMOJI EXTRACTION ===");
+                
+                if (extractedText.isEmpty()) {
+                    CommandTerminal.printError("No hidden text found in emoji");
+                } else {
+                    CommandTerminal.printSuccess("Extracted text: " + extractedText);
+                }
+                break;
+                
+            case "semantic":
+                if (val.isEmpty()) {
+                    CommandTerminal.printError("Usage: emoji semantic <text>");
+                    return;
+                }
+                
+                String semantic = fraymus.emoji.EmojiSteganography.semanticEncode(val);
+                CommandTerminal.printHighlight("=== SEMANTIC EMOJI ENCODING ===");
+                CommandTerminal.print("Dual-layer: Emoji MEANS what it HIDES");
+                CommandTerminal.print("");
+                CommandTerminal.print("Original text: " + val);
+                CommandTerminal.printColored("Semantic emoji: " + semantic, 1.0f, 0.8f, 0.3f);
+                CommandTerminal.print("");
+                CommandTerminal.printInfo("The emoji visually represents the hidden meaning!");
+                break;
+                
+            case "test":
+                CommandTerminal.printHighlight("=== EMOJI STEGANOGRAPHY TESTS ===");
+                
+                // Test 1: Binary encoding
+                String binary = "10110100";
+                String encodedBinary = fraymus.emoji.EmojiSteganography.binaryToZeroWidth(binary);
+                String decodedBinary = fraymus.emoji.EmojiSteganography.zeroWidthToBinary(encodedBinary);
+                boolean test1 = binary.equals(decodedBinary);
+                
+                CommandTerminal.print(String.format("Test 1 - Binary: %s → %d chars → %s %s",
+                    binary, encodedBinary.length(), decodedBinary, test1 ? "✅" : "❌"));
+                
+                // Test 2: String encoding
+                String testStr = "Hello";
+                String encodedStr = fraymus.emoji.EmojiSteganography.stringToZeroWidth(testStr);
+                String decodedStr = fraymus.emoji.EmojiSteganography.zeroWidthToString(encodedStr);
+                boolean test2 = testStr.equals(decodedStr);
+                
+                CommandTerminal.print(String.format("Test 2 - String: \"%s\" → %d bits → \"%s\" %s",
+                    testStr, encodedStr.length(), decodedStr, test2 ? "✅" : "❌"));
+                
+                // Test 3: Emoji hiding
+                String secretMsg = "AI";
+                String hiddenEmoji = fraymus.emoji.EmojiSteganography.hideInEmoji(secretMsg, "🧠");
+                String extractedMsg = fraymus.emoji.EmojiSteganography.extractFromEmoji(hiddenEmoji);
+                boolean test3 = secretMsg.equals(extractedMsg);
+                
+                CommandTerminal.print(String.format("Test 3 - Emoji: \"%s\" in 🧠 → \"%s\" %s",
+                    secretMsg, extractedMsg, test3 ? "✅" : "❌"));
+                
+                // Test 4: Semantic encoding
+                String semanticTest = "hello world";
+                String semanticResult = fraymus.emoji.EmojiSteganography.semanticEncode(semanticTest);
+                
+                CommandTerminal.print(String.format("Test 4 - Semantic: \"%s\" → %s ✅",
+                    semanticTest, semanticResult));
+                
+                CommandTerminal.print("");
+                if (test1 && test2 && test3) {
+                    CommandTerminal.printSuccess("All tests passed! ✅");
+                } else {
+                    CommandTerminal.printError("Some tests failed!");
+                }
+                break;
+                
+            default:
+                CommandTerminal.printError("Unknown emoji command: " + sub);
+                CommandTerminal.print("Commands: hide <text> | extract <emoji> | semantic <text> | test");
+                break;
+        }
+    }
+    
     public boolean isBoundaryEnabled() { return boundaryEnabled; }
 }

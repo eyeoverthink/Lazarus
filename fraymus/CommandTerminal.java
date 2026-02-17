@@ -36,6 +36,7 @@ public class CommandTerminal {
     private static int historyIndex = -1;
 
     private static ExperimentManager experimentManager;
+    private static fraymus.coding.CodingPrompt codingPrompt;
 
     public static class TerminalLine {
         public final String text;
@@ -51,6 +52,20 @@ public class CommandTerminal {
 
     public static void init(ExperimentManager mgr) {
         experimentManager = mgr;
+        
+        // Initialize Coding Agent if Ollama is available
+        try {
+            OllamaSpine ollama = new OllamaSpine();
+            fraymus.coding.CodingAgent agent = new fraymus.coding.CodingAgent(
+                null,  // Knowledge ingestor (optional)
+                new LivingCodeGenerator(),
+                ollama
+            );
+            codingPrompt = new fraymus.coding.CodingPrompt(agent);
+        } catch (Exception e) {
+            System.err.println("Warning: Could not initialize Coding Agent: " + e.getMessage());
+        }
+        
         printBanner();
     }
 
@@ -184,6 +199,9 @@ public class CommandTerminal {
             case "ethics":
                 handleEthics(args);
                 break;
+            case "code":
+                handleCode(fullCommand);
+                break;
             case "codegen":
                 handleCodegen(args);
                 break;
@@ -195,6 +213,12 @@ public class CommandTerminal {
                 break;
             case "physics":
                 handlePhysics(args);
+                break;
+            case "cosmic":
+                handleCosmic(args);
+                break;
+            case "emoji":
+                handleEmoji(args);
                 break;
             case "nodes":
                 showNodes();
@@ -410,6 +434,13 @@ public class CommandTerminal {
         print("  mutate <name>       Trigger mutation trial on entity");
         print("");
         printColored("--- CODE EVOLUTION ---", 0.5f, 0.8f, 1.0f);
+        print("  code: <request>     Natural language code generation (AI-powered)");
+        print("  code python: <req>  Generate Python code");
+        print("  code java: <req>    Generate Java code");
+        print("  code show           Show last generated code");
+        print("  code stats          Show coding agent statistics");
+        print("  code help           Show coding agent help");
+        print("  codegen             Force code generation from entities");
         print("  evolve              Force arena evolution cycle");
         print("  arena               Show concept arena status");
         print("  codegen             Trigger code generation cycle");
@@ -491,6 +522,19 @@ public class CommandTerminal {
         print("  physics speed <f>   Set simulation speed multiplier");
         print("  physics boundary    Toggle boundary walls");
         print("  physics chaos       Randomize all velocities");
+        print("");
+        printColored("--- COSMIC PHYSICS ---", 1.0f, 0.8f, 0.3f);
+        print("  cosmic rocket       Relativistic rocket equation (Project Daedalus)");
+        print("  cosmic warp         Alcubierre warp drive metric");
+        print("  cosmic lagrange     Lagrange point stability (JWST orbit)");
+        print("  cosmic drake        Drake equation (SETI probability)");
+        print("  cosmic all          Run all cosmic physics demonstrations");
+        print("");
+        printColored("--- EMOJI STEGANOGRAPHY ---", 1.0f, 0.5f, 0.8f);
+        print("  emoji hide <text>   Hide text in emoji using zero-width chars");
+        print("  emoji extract <emoji> Extract hidden text from emoji");
+        print("  emoji semantic <text> Encode text semantically (hello→👋🌍)");
+        print("  emoji test          Run steganography tests");
         print("");
         printColored("--- BIO-SYMBIOSIS & SIGNALS ---", 0.5f, 0.8f, 1.0f);
         print("  bio                 Bio-symbiosis status (stress, HR, coherence)");
@@ -837,6 +881,33 @@ public class CommandTerminal {
         printSuccess(String.format("Generated %d code concepts from %d entities", generated, world.getPopulation()));
         FraymusUI.addLog("[TERMINAL] Forced code generation: " + generated + " concepts");
     }
+    
+    private static void handleCode(String fullCommand) {
+        if (codingPrompt == null) {
+            printError("Coding Agent not available. Ensure Ollama is running.");
+            return;
+        }
+        
+        try {
+            String result = codingPrompt.processCommand(fullCommand);
+            // Print result line by line
+            for (String line : result.split("\n")) {
+                if (line.startsWith("🤖")) {
+                    printHighlight(line);
+                } else if (line.contains("✓") || line.startsWith("   ✓")) {
+                    printSuccess(line);
+                } else if (line.contains("✗") || line.startsWith("❌")) {
+                    printError(line);
+                } else if (line.startsWith("```")) {
+                    printColored(line, 0.7f, 0.7f, 0.7f);
+                } else {
+                    print(line);
+                }
+            }
+        } catch (Exception e) {
+            printError("Error processing code command: " + e.getMessage());
+        }
+    }
 
     private static void handleRsa(String args) {
         if (experimentManager == null) { printError("Experiment manager not ready"); return; }
@@ -851,6 +922,16 @@ public class CommandTerminal {
     private static void handlePhysics(String args) {
         if (experimentManager == null) { printError("Experiment manager not ready"); return; }
         experimentManager.runPhysicsCommand(args);
+    }
+
+    private static void handleCosmic(String args) {
+        if (experimentManager == null) { printError("Experiment manager not ready"); return; }
+        experimentManager.runCosmicCommand(args);
+    }
+
+    private static void handleEmoji(String args) {
+        if (experimentManager == null) { printError("Experiment manager not ready"); return; }
+        experimentManager.runEmojiCommand(args);
     }
 
     private static void handleAsk(String args) {
