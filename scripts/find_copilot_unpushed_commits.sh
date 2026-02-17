@@ -6,6 +6,9 @@ cd "$(dirname "$0")/.."
 
 git fetch --all --prune >/dev/null
 
+# Limit displayed commits when showing ahead/untracked history.
+MAX_COMMITS=${MAX_COMMITS:-10}
+
 mapfile -t branches < <(git for-each-ref 'refs/heads/copilot/*' --format='%(refname:short)')
 
 if [[ ${#branches[@]} -eq 0 ]]; then
@@ -24,7 +27,7 @@ for branch in "${branches[@]}"; do
     if [[ "${ahead}" -gt 0 ]]; then
       found_unpushed=1
       echo "⚠️  ${branch} is ${ahead} commit(s) ahead of ${remote}:"
-      git --no-pager log -10 --oneline "${remote}..${branch}"
+      git --no-pager log -"${MAX_COMMITS}" --oneline "${remote}..${branch}"
       echo
     elif [[ "${behind}" -gt 0 ]]; then
       echo "ℹ️  ${branch} is ${behind} commit(s) behind ${remote} (no unpushed commits)."
@@ -32,7 +35,7 @@ for branch in "${branches[@]}"; do
   else
     found_unpushed=1
     echo "⚠️  ${branch} has no remote tracking branch (${remote} missing)."
-    git --no-pager log -10 --oneline "${branch}"
+    git --no-pager log -"${MAX_COMMITS}" --oneline "${branch}"
     echo
   fi
 done
