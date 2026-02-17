@@ -18,11 +18,13 @@ found_unpushed=0
 for branch in "${branches[@]}"; do
   remote="origin/${branch}"
   if git show-ref --verify --quiet "refs/remotes/${remote}"; then
-    read -r ahead behind <<<"$(git rev-list --left-right --count "${remote}...${branch}")"
+    read -r ahead behind <<<"$(git rev-list --left-right --count "${remote}...${branch}" || echo "0 0")"
+    ahead=${ahead:-0}
+    behind=${behind:-0}
     if [[ "${ahead}" -gt 0 ]]; then
       found_unpushed=1
       echo "⚠️  ${branch} is ${ahead} commit(s) ahead of ${remote}:"
-      git --no-pager log --oneline "${remote}..${branch}"
+      git --no-pager log -10 --oneline "${remote}..${branch}"
       echo
     elif [[ "${behind}" -gt 0 ]]; then
       echo "ℹ️  ${branch} is ${behind} commit(s) behind ${remote} (no unpushed commits)."
