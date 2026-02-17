@@ -622,6 +622,12 @@ Lazarus/
 
 ---
 
+## 🛠️ Utility Scripts
+
+- `scripts/find_copilot_unpushed_commits.sh`: fetches and lists any local `copilot/*` branches that are ahead of origin, so you can surface unpushed agent commits quickly.
+
+---
+
 ## 📜 Philosophy
 
 > **Lazarus is not software. It is a living system.**
