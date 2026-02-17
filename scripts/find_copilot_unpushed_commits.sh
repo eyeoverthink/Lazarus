@@ -32,7 +32,7 @@ for branch in "${branches[@]}"; do
   else
     found_unpushed=1
     echo "⚠️  ${branch} has no remote tracking branch (${remote} missing)."
-    git --no-pager log --oneline "${branch}"
+    git --no-pager log -10 --oneline "${branch}"
     echo
   fi
 done
